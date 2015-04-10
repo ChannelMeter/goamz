@@ -1,9 +1,9 @@
 package elb_test
 
 import (
-	"github.com/goamz/goamz/aws"
-	"github.com/goamz/goamz/elb"
-	"github.com/goamz/goamz/elb/elbtest"
+	"github.com/channelmeter/goamz/aws"
+	"github.com/channelmeter/goamz/elb"
+	"github.com/channelmeter/goamz/elb/elbtest"
 	. "gopkg.in/check.v1"
 )
 

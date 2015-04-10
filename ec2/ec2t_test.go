@@ -5,10 +5,10 @@ import (
 	"regexp"
 	"sort"
 
-	"github.com/goamz/goamz/aws"
-	"github.com/goamz/goamz/ec2"
-	"github.com/goamz/goamz/ec2/ec2test"
-	"github.com/goamz/goamz/testutil"
+	"github.com/channelmeter/goamz/aws"
+	"github.com/channelmeter/goamz/ec2"
+	"github.com/channelmeter/goamz/ec2/ec2test"
+	"github.com/channelmeter/goamz/testutil"
 	. "gopkg.in/check.v1"
 )
 

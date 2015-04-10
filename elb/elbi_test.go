@@ -3,9 +3,9 @@ package elb_test
 import (
 	"flag"
 
-	"github.com/goamz/goamz/aws"
-	"github.com/goamz/goamz/ec2"
-	"github.com/goamz/goamz/elb"
+	"github.com/channelmeter/goamz/aws"
+	"github.com/channelmeter/goamz/ec2"
+	"github.com/channelmeter/goamz/elb"
 	. "gopkg.in/check.v1"
 )
 

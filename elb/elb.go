@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/goamz/goamz/aws"
+	"github.com/channelmeter/goamz/aws"
 )
 
 type ELB struct {

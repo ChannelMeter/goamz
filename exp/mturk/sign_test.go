@@ -1,8 +1,8 @@
 package mturk_test
 
 import (
-	"github.com/goamz/goamz/aws"
-	"github.com/goamz/goamz/exp/mturk"
+	"github.com/channelmeter/goamz/aws"
+	"github.com/channelmeter/goamz/exp/mturk"
 	. "gopkg.in/check.v1"
 )
 
