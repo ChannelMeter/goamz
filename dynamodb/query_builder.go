@@ -122,6 +122,13 @@ func (q *Query) AddCreateRequestTable(description TableDescriptionT) {
 		"WriteCapacityUnits": int(description.ProvisionedThroughput.WriteCapacityUnits),
 	}
 
+	if description.StreamSpecification.StreamEnabled {
+		b["StreamSpecification"] = msi{
+			"StreamEnabled":  "true",
+			"StreamViewType": description.StreamSpecification.StreamViewType,
+		}
+	}
+
 	localSecondaryIndexes := []interface{}{}
 
 	for _, ind := range description.LocalSecondaryIndexes {
@@ -167,6 +174,27 @@ func (q *Query) AddDeleteRequestTable(description TableDescriptionT) {
 	b["TableName"] = description.TableName
 }
 
+func (q *Query) AddUpdateRequestTable(description TableDescriptionT) {
+	b := q.buffer
+
+	attDefs := []interface{}{}
+	for _, attr := range description.AttributeDefinitions {
+		attDefs = append(attDefs, msi{
+			"AttributeName": attr.Name,
+			"AttributeType": attr.Type,
+		})
+	}
+	if len(attDefs) > 0 {
+		b["AttributeDefinitions"] = attDefs
+	}
+	b["TableName"] = description.TableName
+	b["ProvisionedThroughput"] = msi{
+		"ReadCapacityUnits":  int(description.ProvisionedThroughput.ReadCapacityUnits),
+		"WriteCapacityUnits": int(description.ProvisionedThroughput.WriteCapacityUnits),
+	}
+
+}
+
 func (q *Query) AddKeyConditions(comparisons []AttributeComparison) {
 	q.buffer["KeyConditions"] = buildComparisons(comparisons)
 }
@@ -180,6 +208,10 @@ func (q *Query) AddSelect(value string) {
 
 func (q *Query) AddIndex(value string) {
 	q.buffer["IndexName"] = value
+}
+
+func (q *Query) ScanIndexDescending() {
+	q.buffer["ScanIndexForward"] = "false"
 }
 
 /*
@@ -251,6 +283,60 @@ func (q *Query) AddExpected(attributes []Attribute) {
 		expected[a.Name] = value
 	}
 	q.buffer["Expected"] = expected
+}
+
+// Add the ReturnValues parameter, used in UpdateItem queries.
+func (q *Query) AddReturnValues(returnValues ReturnValues) {
+	q.buffer["ReturnValues"] = string(returnValues)
+}
+
+// Add the UpdateExpression parameter, used in UpdateItem queries.
+func (q *Query) AddUpdateExpression(expression string) {
+	q.buffer["UpdateExpression"] = expression
+}
+
+// Add the ConditionExpression parameter, used in UpdateItem queries.
+func (q *Query) AddConditionExpression(expression string) {
+	q.buffer["ConditionExpression"] = expression
+}
+
+func (q *Query) AddExpressionAttributes(attributes []Attribute) {
+	existing, ok := q.buffer["ExpressionAttributes"].(msi)
+	if !ok {
+		existing = msi{}
+		q.buffer["ExpressionAttributes"] = existing
+	}
+	for key, val := range attributeList(attributes) {
+		existing[key] = val
+	}
+}
+
+func (q *Query) AddExclusiveStartStreamArn(arn string) {
+	q.buffer["ExclusiveStartStreamArn"] = arn
+}
+
+func (q *Query) AddStreamArn(arn string) {
+	q.buffer["StreamArn"] = arn
+}
+
+func (q *Query) AddExclusiveStartShardId(shardId string) {
+	q.buffer["ExclusiveStartShardId"] = shardId
+}
+
+func (q *Query) AddShardId(shardId string) {
+	q.buffer["ShardId"] = shardId
+}
+
+func (q *Query) AddShardIteratorType(shardIteratorType string) {
+	q.buffer["ShardIteratorType"] = shardIteratorType
+}
+
+func (q *Query) AddSequenceNumber(sequenceNumber string) {
+	q.buffer["SequenceNumber"] = sequenceNumber
+}
+
+func (q *Query) AddShardIterator(shardIterator string) {
+	q.buffer["ShardIterator"] = shardIterator
 }
 
 func attributeList(attributes []Attribute) msi {
