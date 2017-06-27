@@ -10,6 +10,7 @@ import (
 	"io"
 	"sort"
 	"strconv"
+	"time"
 )
 
 // Multi represents an unfinished multipart upload.
@@ -153,6 +154,49 @@ func (b *Bucket) InitMulti(key string, contType string, perm ACL) (*Multi, error
 		"Content-Type": {contType},
 	}
 	return b.InitMultiHeader(key, headers, perm)
+}
+
+type putCopy struct {
+	XMLName      xml.Name  `xml:"CopyPartResult"`
+	ETag         string    `xml:"ETag"`
+	LastModified time.Time `json:"LastModified"`
+}
+
+func (m *Multi) PutCopy(n int, path string) (Part, error) {
+	headers := map[string][]string{
+		"x-amz-copy-source": {path},
+	}
+	params := map[string][]string{
+		"uploadId":   {m.UploadId},
+		"partNumber": {strconv.FormatInt(int64(n), 10)},
+	}
+	for attempt := m.Bucket.S3.AttemptStrategy.Start(); attempt.Next(); {
+		req := &request{
+			method:  "PUT",
+			bucket:  m.Bucket.Name,
+			path:    m.Key,
+			headers: headers,
+			params:  params,
+		}
+		err := m.Bucket.S3.prepare(req)
+		if err != nil {
+			return Part{}, err
+		}
+		var result putCopy
+		_, err = m.Bucket.S3.run(req, &result)
+		if shouldRetry(err) && attempt.HasNext() {
+			continue
+		}
+		if err != nil {
+			return Part{}, err
+		}
+		etag := result.ETag
+		if etag == "" {
+			return Part{}, errors.New("part upload succeeded with no ETag")
+		}
+		return Part{n, etag, 0}, nil
+	}
+	panic("unreachable")
 }
 
 // PutPart sends part n of the multipart upload, reading all the content from r.
